@@ -24,6 +24,10 @@ namespace Server
     {
         public MainWindow()
         {
+            
+            
+            
+            
             InitializeComponent();
             App.MyGrid = MyGrid;
             var raiseServerUC = new RaiseServerUC();

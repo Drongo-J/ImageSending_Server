@@ -3,13 +3,19 @@ using Server.Helpers;
 using Server.Models;
 using Server.Views;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.Serialization.Formatters.Soap;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Markup;
 using System.Windows.Media;
 
 namespace Server.ViewModels
@@ -30,7 +36,7 @@ namespace Server.ViewModels
 
                 string hostName = Dns.GetHostName(); // Retrive the Name of HOST
                 string myIP = Dns.GetHostEntry(hostName).AddressList[0].ToString(); // Get the IP
-                var ipAdress = IPAddress.Parse(myIP);
+                var ipAdress = IPAddress.Parse("192.168.1.67");
                 var port = Constants.Port;
                 using (var socket = new Socket(ipAdress.AddressFamily, SocketType.Stream, ProtocolType.Tcp))
                 {
@@ -41,19 +47,53 @@ namespace Server.ViewModels
                     while (true)
                     {
                         var client = await socket.AcceptAsync();
+                        //var ipClient = client.RemoteEndPoint.ToString().Split(':').ElementAt(0);
+                        //var hostname = GetHostName(ipClient);
+                        //MessageBox.Show($"'{hostname}' connected to the server"); 
                         await Task.Run(() =>
                         {
                             var length = 0;
-                            var bytes = new byte[50000];
+                            var bytes = new byte[40000];
                             do
                             {
-                                length = client.Receive(bytes);
-                                var imageSource = ImageHelpers.ByteToImage(bytes);
-                                var post = new Post
-                                {
-                                    ImageSource = imageSource,
+                                //ArraySegment<byte[]> arr = new ArraySegment<byte[]>();
+                                //List<byte[]> listOfBatches = AsBatches(byteArray, 640).ToList();
+                                //length = await client.ReceiveAsync(listOfBatches, SocketFlags.None, );
+                                //client.Receive(bytes, 0, 0);
+                                //length = client.Receive(bytes);
 
-                                };
+                                length = client.Receive(bytes);
+                                //var msg = Encoding.UTF8.GetString(bytes, 0, length);
+                                //if (length > 0)
+                                //    MessageBox.Show($"Client : {client.RemoteEndPoint} : {msg}");
+
+                                if (length > 0)
+                                {
+                                    var msg = Encoding.UTF8.GetString(bytes);
+                                    MessageBox.Show(msg);
+                                    //SoapFormatter formatter = new SoapFormatter();
+                                    //Stream stream = new MemoryStream(bytes);
+                                    //var post = (ImageMessage)formatter.Deserialize(stream);
+
+                                    //var binaryFormatter = new BinaryFormatter();
+                                    //using (var ms = new MemoryStream(bytes))
+                                    //{
+                                    //    post = (ImageMessage)binaryFormatter.Deserialize(ms);
+                                    //}
+
+                                    ////var post = ByteHelper.FromByteArray<ImageMessage>(bytes);
+                                    //var postUC = new PostUC();
+                                    //var postUCVM = new PostUCViewModel(post);
+                                    //postUC.DataContext = postUCVM;
+
+                                    //((App.MyGrid.Children[0] as PostsUC).DataContext as PostsUCViewModel).Posts.Add(postUC);
+                                }
+                                //var imageSource = ImageHelpers.ByteToImage(bytes);
+                                //var post = new Post
+                                //{
+                                //    ImageSource = imageSource,
+
+                                //};
                             } while (true);
                         });
                     }
@@ -61,6 +101,26 @@ namespace Server.ViewModels
 
                 // show that server was raised
             });
+        }
+
+        public string GetHostName(string ipAddress)
+        {
+            try
+            {
+                IPHostEntry entry = Dns.GetHostEntry(ipAddress);
+                if (entry != null)
+                {
+                    return entry.HostName;
+                }
+            }
+            catch (SocketException ex)
+            {
+                //unknown host or
+                //not every IP has a name
+                //log exception (manage it)
+            }
+
+            return null;
         }
     }
 }

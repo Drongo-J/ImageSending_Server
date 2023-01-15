@@ -9,15 +9,15 @@ namespace Server.ViewModels
 {
     public class PostUCViewModel : BaseViewModel
     {
-        private Post post;
+        private ImageMessage post;
 
-        public Post Post
+        public ImageMessage Post
         {
             get { return post; }
             set { post = value; OnPropertyChanged(); }
         }
 
-        public PostUCViewModel(Post _post)
+        public PostUCViewModel(ImageMessage _post)
         {
             Post = _post;
         }
