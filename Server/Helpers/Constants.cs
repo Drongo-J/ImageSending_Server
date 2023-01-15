@@ -8,6 +8,6 @@ namespace Server.Helpers
 {
     public class Constants
     {
-        public const int Port = 80;
+        public const int Port = 27001;
     }
 }

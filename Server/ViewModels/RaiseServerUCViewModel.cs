@@ -1,6 +1,8 @@
-﻿using Server.Commands;
+﻿using Newtonsoft.Json;
+using Server.Commands;
 using Server.Helpers;
 using Server.Models;
+using Server.Services.NetworkServices;
 using Server.Views;
 using System;
 using System.Collections;
@@ -34,11 +36,20 @@ namespace Server.ViewModels
                 postsUC.DataContext = postsUCVM;
                 App.MyGrid.Children.Add(postsUC);
 
-                string hostName = Dns.GetHostName(); // Retrive the Name of HOST
-                string myIP = Dns.GetHostEntry(hostName).AddressList[0].ToString(); // Get the IP
-                var ipAdress = IPAddress.Parse("192.168.1.67");
+                string ip;
+                try
+                {
+                    ip = NetworkHelpers.GetLocalIpAddress();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    return;
+                }
+
+                var ipAdress = IPAddress.Parse(ip);
                 var port = Constants.Port;
-                using (var socket = new Socket(ipAdress.AddressFamily, SocketType.Stream, ProtocolType.Tcp))
+                using (var socket = new Socket(ipAdress.AddressFamily, SocketType.Stream, ProtocolType.IP))
                 {
                     var ep = new IPEndPoint(ipAdress, port);
                     socket.Bind(ep);
@@ -62,39 +73,41 @@ namespace Server.ViewModels
                                 //client.Receive(bytes, 0, 0);
                                 //length = client.Receive(bytes);
 
-                                length = client.Receive(bytes);
                                 //var msg = Encoding.UTF8.GetString(bytes, 0, length);
                                 //if (length > 0)
                                 //    MessageBox.Show($"Client : {client.RemoteEndPoint} : {msg}");
 
+
+                                length = client.Receive(bytes);
                                 if (length > 0)
                                 {
-                                    var msg = Encoding.UTF8.GetString(bytes);
-                                    MessageBox.Show(msg);
-                                    //SoapFormatter formatter = new SoapFormatter();
-                                    //Stream stream = new MemoryStream(bytes);
-                                    //var post = (ImageMessage)formatter.Deserialize(stream);
-
-                                    //var binaryFormatter = new BinaryFormatter();
-                                    //using (var ms = new MemoryStream(bytes))
-                                    //{
-                                    //    post = (ImageMessage)binaryFormatter.Deserialize(ms);
-                                    //}
-
-                                    ////var post = ByteHelper.FromByteArray<ImageMessage>(bytes);
-                                    //var postUC = new PostUC();
-                                    //var postUCVM = new PostUCViewModel(post);
-                                    //postUC.DataContext = postUCVM;
-
-                                    //((App.MyGrid.Children[0] as PostsUC).DataContext as PostsUCViewModel).Posts.Add(postUC);
+                                    var jsonStr = Encoding.UTF8.GetString(bytes);
+                                    var imageMessage = JsonConvert.DeserializeObject<ImageMessage>(jsonStr);
                                 }
+                                //SoapFormatter formatter = new SoapFormatter();
+                                //Stream stream = new MemoryStream(bytes);
+                                //var post = (ImageMessage)formatter.Deserialize(stream);
+
+                                //var binaryFormatter = new BinaryFormatter();
+                                //using (var ms = new MemoryStream(bytes))
+                                //{
+                                //    post = (ImageMessage)binaryFormatter.Deserialize(ms);
+                                //}
+
+                                ////var post = ByteHelper.FromByteArray<ImageMessage>(bytes);
+                                //var postUC = new PostUC();
+                                //var postUCVM = new PostUCViewModel(post);
+                                //postUC.DataContext = postUCVM;
+
+                                //((App.MyGrid.Children[0] as PostsUC).DataContext as PostsUCViewModel).Posts.Add(postUC);
+
                                 //var imageSource = ImageHelpers.ByteToImage(bytes);
                                 //var post = new Post
                                 //{
                                 //    ImageSource = imageSource,
 
                                 //};
-                            } while (true);
+                            } while (length > 0);
                         });
                     }
                 }
