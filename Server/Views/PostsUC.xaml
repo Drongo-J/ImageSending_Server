@@ -27,30 +27,33 @@
         </Grid>
 
         <Grid Grid.Row="1">
-            <ListView ItemsSource="{Binding Posts}"
+            <ScrollViewer Margin="0,0,20,0">
+
+                <ListView ItemsSource="{Binding Posts}"
                       BorderThickness="6"
                       ItemContainerStyle="{StaticResource LvItemStyle}">
-                <!--<i:Interaction.Triggers>
+                    <!--<i:Interaction.Triggers>
                     <i:EventTrigger EventName="SelectionChanged">
                         <i:InvokeCommandAction Command="{Binding SelectedCarChangedCommand}" ></i:InvokeCommandAction>
                     </i:EventTrigger>
                 </i:Interaction.Triggers>-->
 
-                <ListBox.Template>
-                    <ControlTemplate TargetType="ListBox">
-                        <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderBrush}">
-                            <ItemsPresenter/>
-                        </Border>
-                    </ControlTemplate>
-                </ListBox.Template>
+                    <ListBox.Template>
+                        <ControlTemplate TargetType="ListBox">
+                            <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderBrush}">
+                                <ItemsPresenter/>
+                            </Border>
+                        </ControlTemplate>
+                    </ListBox.Template>
 
 
-                <ListView.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel Height="Auto" Width="1100" Margin="0,20,0,0"></WrapPanel>
-                    </ItemsPanelTemplate>
-                </ListView.ItemsPanel>
-            </ListView>
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Height="Auto" Width="1100" Margin="0,20,0,0"></WrapPanel>
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                </ListView>
+            </ScrollViewer>
         </Grid>
     </Grid>
 </UserControl>

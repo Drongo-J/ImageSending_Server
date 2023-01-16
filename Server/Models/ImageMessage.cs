@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -14,13 +15,5 @@ namespace Server.Models
     {
         public byte[] ImageBytes { get; set; }
         public string Title { get; set; }
-
-        public static ImageMessage FromBytes(byte[] bytes)
-        {
-            GCHandle gcHandle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
-            var data = (ImageMessage)Marshal.PtrToStructure(gcHandle.AddrOfPinnedObject(), typeof(ImageMessage));
-            gcHandle.Free();
-            return data;
-        }
     }
 }

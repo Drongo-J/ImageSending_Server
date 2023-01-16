@@ -10,14 +10,13 @@ namespace Server.ViewModels
 {
     public class PostsUCViewModel : BaseViewModel
     {
-        private ObservableCollection<PostUC> posts;
+        private ObservableCollection<PostUC> posts = new ObservableCollection<PostUC>();
 
         public ObservableCollection<PostUC> Posts
         {
             get { return posts; }
             set { posts = value; OnPropertyChanged(); }
         }
-
 
         public PostsUCViewModel()
         {

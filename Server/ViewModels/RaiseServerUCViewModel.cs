@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Server.Commands;
 using Server.Helpers;
 using Server.Models;
@@ -7,6 +8,8 @@ using Server.Views;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -15,16 +18,21 @@ using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization.Formatters.Soap;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Markup;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 
 namespace Server.ViewModels
 {
     public class RaiseServerUCViewModel
     {
         public RelayCommand RaiseServerCommand { get; set; }
+
+        private delegate void MyDel();
 
         public RaiseServerUCViewModel()
         {
@@ -58,57 +66,32 @@ namespace Server.ViewModels
                     while (true)
                     {
                         var client = await socket.AcceptAsync();
-                        //var ipClient = client.RemoteEndPoint.ToString().Split(':').ElementAt(0);
-                        //var hostname = GetHostName(ipClient);
-                        //MessageBox.Show($"'{hostname}' connected to the server"); 
-                        await Task.Run(() =>
+                        var thread = new Thread(() =>
                         {
                             var length = 0;
-                            var bytes = new byte[40000];
+                            var bytes = new byte[10000000];
                             do
                             {
-                                //ArraySegment<byte[]> arr = new ArraySegment<byte[]>();
-                                //List<byte[]> listOfBatches = AsBatches(byteArray, 640).ToList();
-                                //length = await client.ReceiveAsync(listOfBatches, SocketFlags.None, );
-                                //client.Receive(bytes, 0, 0);
-                                //length = client.Receive(bytes);
-
-                                //var msg = Encoding.UTF8.GetString(bytes, 0, length);
-                                //if (length > 0)
-                                //    MessageBox.Show($"Client : {client.RemoteEndPoint} : {msg}");
-
-
                                 length = client.Receive(bytes);
                                 if (length > 0)
                                 {
-                                    var jsonStr = Encoding.UTF8.GetString(bytes);
-                                    var imageMessage = JsonConvert.DeserializeObject<ImageMessage>(jsonStr);
+                                    var jsonStr = Encoding.ASCII.GetString(bytes);
+
+                                    App.Current.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
+                                    {
+                                        var imageMessage = JsonConvert.DeserializeObject<ImageMessage>(jsonStr);
+
+                                        var postUC = new PostUC();
+                                        var postUCVM = new PostUCViewModel(imageMessage);
+                                        postUC.DataContext = postUCVM;
+
+                                        postsUCVM.Posts.Add(postUC);
+                                    }));
                                 }
-                                //SoapFormatter formatter = new SoapFormatter();
-                                //Stream stream = new MemoryStream(bytes);
-                                //var post = (ImageMessage)formatter.Deserialize(stream);
-
-                                //var binaryFormatter = new BinaryFormatter();
-                                //using (var ms = new MemoryStream(bytes))
-                                //{
-                                //    post = (ImageMessage)binaryFormatter.Deserialize(ms);
-                                //}
-
-                                ////var post = ByteHelper.FromByteArray<ImageMessage>(bytes);
-                                //var postUC = new PostUC();
-                                //var postUCVM = new PostUCViewModel(post);
-                                //postUC.DataContext = postUCVM;
-
-                                //((App.MyGrid.Children[0] as PostsUC).DataContext as PostsUCViewModel).Posts.Add(postUC);
-
-                                //var imageSource = ImageHelpers.ByteToImage(bytes);
-                                //var post = new Post
-                                //{
-                                //    ImageSource = imageSource,
-
-                                //};
                             } while (length > 0);
                         });
+                        thread.SetApartmentState(ApartmentState.STA);
+                        thread.Start();
                     }
                 }
 
@@ -132,7 +115,6 @@ namespace Server.ViewModels
                 //not every IP has a name
                 //log exception (manage it)
             }
-
             return null;
         }
     }
